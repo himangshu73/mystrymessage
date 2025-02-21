@@ -15,9 +15,9 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
-  return NextResponse.redirect(new URL("/sign-in", request.url));
+  return NextResponse.redirect(new URL("/", request.url));
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/verify/:path*"],
+  matcher: ["/dashboard/:path*", "/verify/:path*"],
 };

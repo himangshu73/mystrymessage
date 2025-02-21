@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,8 +14,12 @@ import { signUpSchema } from "@/schemas/signUpSchema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
+  const [submit, setSubmit] = useState(false);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -26,8 +29,20 @@ export default function SignUpPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof signUpSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof signUpSchema>) {
+    try {
+      setSubmit(true);
+      const response = await axios.post("/api/sign-up", values);
+      console.log(response.data.message);
+      toast(response.data.message);
+      form.reset();
+    } catch (error: any) {
+      const response = error.response?.data?.message || error.message;
+      console.error("Signup error:", response);
+      toast(response);
+    } finally {
+      setSubmit(false);
+    }
   }
 
   return (
@@ -77,7 +92,7 @@ export default function SignUpPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Sign Up</Button>
+            <Button type="submit">{submit ? "Submitting" : "Submit"}</Button>
           </form>
         </Form>
       </div>
