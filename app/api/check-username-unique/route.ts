@@ -44,12 +44,12 @@ export async function GET(request: Request) {
           success: false,
           message: "Username is already taken",
         },
-        { status: 400 }
+        { status: 200 }
       );
     }
     return Response.json(
-      { success: true, messsage: "Username is unique" },
-      { status: 400 }
+      { success: true, message: "Username is unique" },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error checking username", error);

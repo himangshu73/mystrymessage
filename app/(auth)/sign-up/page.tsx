@@ -17,9 +17,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useDebounceCallback } from "usehooks-ts";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const [username, setUsername] = useState("");
+  const [userMessage, setUserMessage] = useState("");
   const [submit, setSubmit] = useState(false);
+  const router = useRouter()
+  const debounced = useDebounceCallback(setUsername, 500);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -29,16 +35,32 @@ export default function SignUpPage() {
     },
   });
 
+  useEffect(() => {
+    const checkUsernameUnique = async () => {
+      setUserMessage("");
+      try {
+        const response = await axios.get(
+          `/api/check-username-unique?username=${username}`
+        );
+        setUserMessage(response.data.message);
+        
+      } catch (error) {
+        console.log("Error Checking username:", error);
+      }
+    };
+    checkUsernameUnique();
+  }, [username]);
+
   async function onSubmit(values: z.infer<typeof signUpSchema>) {
     try {
       setSubmit(true);
       const response = await axios.post("/api/sign-up", values);
-      console.log(response.data.message);
       toast(response.data.message);
+      router.push(`/verify-code/${username}`)
       form.reset();
     } catch (error: any) {
       const response = error.response?.data?.message || error.message;
-      console.error("Signup error:", response);
+
       toast(response);
     } finally {
       setSubmit(false);
@@ -57,9 +79,18 @@ export default function SignUpPage() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="username" {...field} />
+                    <Input
+                      placeholder="username"
+                      {...field}
+                      onChange={(event) => {
+                        field.onChange(event);
+                        debounced(event.target.value);
+                      }}
+                    />
                   </FormControl>
-
+                  <div className="h-5 text-sm">
+                    {userMessage && <p>{userMessage}</p>}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
