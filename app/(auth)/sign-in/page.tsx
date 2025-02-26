@@ -43,7 +43,7 @@ export default function SignInPage() {
     if (result?.url) {
       console.log("Signed In Successfully.");
       toast("Signed In Successfully");
-      router.push("/");
+      router.push(`/dashboard/${data.identifier}`);
       setSubmit(false);
     }
   }

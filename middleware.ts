@@ -6,16 +6,23 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const url = request.nextUrl;
 
-  if (
-    token &&
-    (url.pathname.startsWith("/sign-in") ||
-      url.pathname.startsWith("/sign-up") ||
-      url.pathname.startsWith("/verify") ||
-      url.pathname.startsWith("/"))
-  ) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (token) {
+    const username = token.username;
+    console.log(username);
+    if (!username) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    if (
+      url.pathname.startsWith("/sign-in") ||
+      url.pathname.startsWith("sign-up") ||
+      url.pathname.startsWith("verify") ||
+      url.pathname === "/"
+    ) {
+      return NextResponse.redirect(new URL(`/dashboard/${username}`));
+    }
   }
-  return NextResponse.redirect(new URL("/", request.url));
+  return NextResponse.next();
 }
 
 export const config = {
